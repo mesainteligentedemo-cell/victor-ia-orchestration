@@ -1,0 +1,77 @@
+{
+  "agentes": [
+    {
+      "id": "arquitecto",
+      "nombre": "Arquitecto (Líder)",
+      "rol": "lider",
+      "descripcion": "Planifica, evalúa y delega trabajo. Supervisor general del proyecto.",
+      "modelo": "claude-opus-4-8",
+      "capacidades": ["analysis", "planning", "delegation", "synthesis"],
+      "tools": ["read", "glob", "grep"],
+      "puede_invocar": ["implementador", "revisor"]
+    },
+    {
+      "id": "frontend-dev",
+      "nombre": "Frontend Developer",
+      "rol": "implementador",
+      "descripcion": "Ejecuta trabajo de frontend, escribe código, crea componentes.",
+      "modelo": "claude-sonnet-4-6",
+      "capacidades": ["coding", "design-implementation", "testing"],
+      "tools": ["read", "edit", "write", "bash", "glob"],
+      "puede_invocar": ["revisor"]
+    },
+    {
+      "id": "video-producer",
+      "nombre": "Video Producer",
+      "rol": "implementador",
+      "descripcion": "Produce videos, anima, edita, sincroniza VO.",
+      "modelo": "claude-sonnet-4-6",
+      "capacidades": ["video-production", "animation", "audio-sync"],
+      "tools": ["read", "write", "bash"],
+      "puede_invocar": ["revisor"]
+    },
+    {
+      "id": "designer",
+      "nombre": "Designer",
+      "rol": "implementador",
+      "descripcion": "Diseña interfaces, componentes, sistemas visuales.",
+      "modelo": "claude-sonnet-4-6",
+      "capacidades": ["design", "ui-ux", "branding"],
+      "tools": ["read", "write"],
+      "puede_invocar": ["revisor"]
+    },
+    {
+      "id": "revisor",
+      "nombre": "Code Reviewer",
+      "rol": "revisor",
+      "descripcion": "Valida tests, código, UI, accesibilidad. Aprueba o rechaza.",
+      "modelo": "claude-opus-4-8",
+      "capacidades": ["code-review", "testing", "quality-assurance"],
+      "tools": ["read", "grep", "bash"],
+      "puede_invocar": []
+    }
+  ],
+  "multi_agent_workflows": [
+    {
+      "id": "desarrollo-website",
+      "nombre": "Desarrollo de Website",
+      "flujo": "arquitecto -> implementador -> revisor",
+      "descripcion": "Flujo completo para desarrollar un sitio web",
+      "agentes_requeridos": ["arquitecto", "frontend-dev", "revisor"]
+    },
+    {
+      "id": "produccion-video",
+      "nombre": "Producción de Video",
+      "flujo": "arquitecto -> video-producer -> revisor",
+      "descripcion": "Flujo completo para producir un video",
+      "agentes_requeridos": ["arquitecto", "video-producer", "revisor"]
+    },
+    {
+      "id": "tarea-simple",
+      "nombre": "Tarea Simple",
+      "flujo": "implementador directo",
+      "descripcion": "Para tareas pequeñas que no necesitan supervisor",
+      "agentes_requeridos": ["frontend-dev"]
+    }
+  ]
+}

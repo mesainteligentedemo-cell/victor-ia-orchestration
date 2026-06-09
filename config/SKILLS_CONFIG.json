@@ -1,0 +1,84 @@
+{
+  "skills": [
+    {
+      "id": "brain-tracker-ux",
+      "nombre": "Brain Tracker UX",
+      "descripcion": "Diseño y pulido UX/UI del Victor IA Brain Tracker — luxury dark SaaS",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "brain-tracker-ux.md",
+      "categorias": ["ux", "design", "brain-tracker"],
+      "invoca_comando": "/brain-tracker-ux",
+      "requiere": ["figma", "pixel-perfecto"]
+    },
+    {
+      "id": "pixel-perfecto",
+      "nombre": "Pixel Perfecto",
+      "descripcion": "Validación visual pixel-perfect y auditoría CSS de calidad Awwwards",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "pixel-perfecto.md",
+      "categorias": ["quality", "css", "design"],
+      "invoca_comando": "/pixel-perfecto",
+      "requiere": []
+    },
+    {
+      "id": "web-4o",
+      "nombre": "Web 4.0",
+      "descripcion": "Framework moderno para sitios web de última generación",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "web-4o.md",
+      "categorias": ["web", "framework"],
+      "invoca_comando": "/web-4o",
+      "requiere": []
+    },
+    {
+      "id": "skill-inclusivo",
+      "nombre": "Inclusivo",
+      "descripcion": "Diseño Web Inclusivo, Accesibilidad y Experiencias Multimodales",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "skill-inclusivo.md",
+      "categorias": ["accessibility", "inclusive-design"],
+      "invoca_comando": "/skill-inclusivo",
+      "requiere": []
+    },
+    {
+      "id": "svg-motion",
+      "nombre": "SVG Motion",
+      "descripcion": "Animaciones SVG y motion design para videos",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "svg-motion.md",
+      "categorias": ["animation", "video", "svg"],
+      "invoca_comando": "/svg-motion",
+      "requiere": []
+    },
+    {
+      "id": "web-assets-deploy",
+      "nombre": "Web Assets Deploy",
+      "descripcion": "Imágenes, Videos & Vercel sin Errores",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "web-assets-deploy.md",
+      "categorias": ["deployment", "assets", "media"],
+      "invoca_comando": "/web-assets-deploy",
+      "requiere": []
+    },
+    {
+      "id": "deep-research",
+      "nombre": "Deep Research",
+      "descripcion": "Deep research harness — fan-out web searches, fetch sources, adversarially verify claims",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "deep-research.md",
+      "categorias": ["research", "analysis"],
+      "invoca_comando": "/deep-research",
+      "requiere": []
+    },
+    {
+      "id": "code-review",
+      "nombre": "Code Review",
+      "descripcion": "Review de código para correctness bugs y simplificación",
+      "carpeta": "C:\\Users\\inbou\\.claude\\skills",
+      "archivo": "code-review.md",
+      "categorias": ["quality", "review"],
+      "invoca_comando": "/code-review",
+      "requiere": []
+    }
+  ]
+}

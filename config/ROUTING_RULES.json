@@ -1,0 +1,55 @@
+{
+  "routing_rules": [
+    {
+      "id": "task-analysis",
+      "nombre": "Análisis de Tarea",
+      "condición": "prompt_length > 100 && (keywords: 'diseña', 'crea', 'implementa', 'refactor')",
+      "flujo_recomendado": "desarrollo-website",
+      "agente_inicial": "arquitecto",
+      "descripcion": "Tareas complejas → Arquitecto planifica, luego implementador"
+    },
+    {
+      "id": "task-simple",
+      "nombre": "Tarea Simple",
+      "condición": "prompt_length < 100 && !complejidad_alta",
+      "flujo_recomendado": "tarea-simple",
+      "agente_inicial": "frontend-dev",
+      "descripcion": "Tareas pequeñas → Directo a implementador"
+    },
+    {
+      "id": "task-video",
+      "nombre": "Producción de Video",
+      "condición": "keywords: 'video', 'kling', 'runway', 'producción'",
+      "flujo_recomendado": "produccion-video",
+      "agente_inicial": "arquitecto",
+      "descripcion": "Videos → Arquitecto + Video Producer + Revisor"
+    },
+    {
+      "id": "task-design",
+      "nombre": "Diseño / Branding",
+      "condición": "keywords: 'diseña', 'ui', 'ux', 'figma', 'brandbook', 'identidad'",
+      "flujo_recomendado": "desarrollo-website",
+      "agente_inicial": "arquitecto",
+      "descripcion": "Diseño → Arquitecto + Designer + Revisor"
+    },
+    {
+      "id": "task-review",
+      "nombre": "Code Review",
+      "condición": "keywords: 'revisa', 'review', 'audita', 'quality'",
+      "flujo_recomendado": "tarea-simple",
+      "agente_inicial": "revisor",
+      "descripcion": "Reviews → Directo a revisor"
+    }
+  ],
+  "prioridades": {
+    "1_critico": "Cliente mencionado + tarea bloqueante",
+    "2_alto": "Cliente mencionado",
+    "3_normal": "Tarea técnica",
+    "4_bajo": "Investigación o exploración"
+  },
+  "model_selection": {
+    "lider": "claude-opus-4-8",
+    "implementador": "claude-sonnet-4-6",
+    "revisor": "claude-opus-4-8"
+  }
+}

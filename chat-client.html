@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Victor IA Orchestration Hub - Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #2d3556 #0a0e27;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0a0e27;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #2d3556;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #404856;
+    }
+
+    .chat-message {
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .agent-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
+      }
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #00d9ff, #0066ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .code-block {
+      background: #1a1f3a;
+      border-left: 3px solid #0066ff;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0e27] text-[#e0e0e0]">
+
+<div class="flex h-screen w-screen">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="w-64 bg-[#1a1f3a] border-r border-[#2d3556] flex flex-col">
+
+    <!-- Logo -->
+    <div class="p-4 border-b border-[#2d3556]">
+      <h1 class="text-xl font-bold gradient-text">Victor IA</h1>
+      <p class="text-xs text-[#909caf] mt-1">Orchestration Hub</p>
+    </div>
+
+    <!-- Project Selector -->
+    <div class="p-4 border-b border-[#2d3556]">
+      <label class="block text-xs font-semibold text-[#00d9ff] mb-2">CURRENT PROJECT</label>
+      <select id="projectSelector" class="w-full bg-[#2d3556] text-[#e0e0e0] px-3 py-2 rounded border border-[#404856] text-sm focus:outline-none focus:border-[#00d9ff]">
+        <option value="">Auto-detect</option>
+        <option value="victor-ia-website">Victor IA Website</option>
+        <option value="costa-negra">Costa Negra</option>
+        <option value="lativa">LATIVA (Video)</option>
+        <option value="influence-ia">Influence IA</option>
+      </select>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <div class="space-y-2">
+        <a href="#" class="block p-2 rounded hover:bg-[#2d3556] transition text-sm">💬 New Chat</a>
+        <a href="#" class="block p-2 rounded hover:bg-[#2d3556] transition text-sm">📁 Projects</a>
+        <a href="#" class="block p-2 rounded hover:bg-[#2d3556] transition text-sm">📚 Memory</a>
+        <a href="#" class="block p-2 rounded hover:bg-[#2d3556] transition text-sm">⚙️ Settings</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 border-t border-[#2d3556]">
+      <button onclick="toggleTheme()" class="w-full px-3 py-2 bg-[#2d3556] hover:bg-[#404856] rounded text-sm transition">
+        🌙 Dark Mode
+      </button>
+    </div>
+
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="flex-1 flex flex-col">
+
+    <!-- HEADER -->
+    <div class="bg-[#1a1f3a] border-b border-[#2d3556] p-4 flex justify-between items-center">
+      <div>
+        <h2 id="projectTitle" class="text-lg font-semibold">New Chat</h2>
+        <p id="projectSubtitle" class="text-xs text-[#909caf]">Auto-detecting project...</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="timeTracking" class="text-xs text-[#00d9ff]">⏱️ 00:00</span>
+        <button onclick="showSettings()" class="px-3 py-2 bg-[#2d3556] hover:bg-[#404856] rounded text-sm transition">⚙️</button>
+      </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div id="chatArea" class="flex-1 overflow-y-auto p-6 space-y-4">
+      <div class="text-center text-[#909caf] py-8">
+        <p class="text-sm">Welcome to Victor IA Orchestration Hub</p>
+        <p class="text-xs mt-2">Start typing to begin. Use / for skills, @ for agents, $ for CLI commands.</p>
+      </div>
+    </div>
+
+    <!-- AGENT STATUS -->
+    <div class="bg-[#1a1f3a] border-t border-[#2d3556] px-6 py-3">
+      <div id="agentStatus" class="flex gap-2 items-center text-xs">
+        <span class="text-[#909caf]">Agents:</span>
+        <span class="px-2 py-1 bg-[#2d3556] rounded text-[#00d9ff]">Ready</span>
+      </div>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="bg-[#1a1f3a] border-t border-[#2d3556] p-4">
+      <div class="flex gap-2">
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Type a message... (Cmd+K for commands)"
+          class="flex-1 bg-[#2d3556] text-[#e0e0e0] px-4 py-3 rounded border border-[#404856] focus:outline-none focus:border-[#00d9ff] transition"
+          onkeypress="handleKeyPress(event)"
+        >
+        <button onclick="sendMessage()" class="px-6 py-3 bg-gradient-to-r from-[#00d9ff] to-[#0066ff] text-[#0a0e27] rounded font-semibold hover:opacity-90 transition">
+          Send
+        </button>
+      </div>
+      <div class="text-xs text-[#909caf] mt-2">
+        Tip: Use <span class="text-[#00d9ff]">/</span> for skills, <span class="text-[#00d9ff]">@</span> for agents, <span class="text-[#00d9ff]">$</span> for CLI
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="w-64 bg-[#1a1f3a] border-l border-[#2d3556] flex flex-col">
+
+    <!-- MEMORY SECTION -->
+    <div class="border-b border-[#2d3556] p-4">
+      <h3 class="font-semibold text-[#00d9ff] text-sm mb-3">📚 MEMORY</h3>
+      <div id="memorySidebar" class="space-y-2 text-xs">
+        <p class="text-[#909caf]">No memory loaded</p>
+      </div>
+    </div>
+
+    <!-- AGENT STATUS DETAIL -->
+    <div class="border-b border-[#2d3556] p-4">
+      <h3 class="font-semibold text-[#00d9ff] text-sm mb-3">🤖 AGENTS</h3>
+      <div id="agentDetail" class="space-y-2 text-xs">
+        <div class="p-2 bg-[#2d3556] rounded">
+          <p class="font-semibold">Arquitecto</p>
+          <p class="text-[#909caf]">Idle</p>
+        </div>
+        <div class="p-2 bg-[#2d3556] rounded">
+          <p class="font-semibold">Frontend Dev</p>
+          <p class="text-[#909caf]">Ready</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <h3 class="font-semibold text-[#00d9ff] text-sm mb-3">📊 ACTIVITY</h3>
+      <div id="activityLog" class="space-y-1 text-xs text-[#909caf]">
+        <p>System initialized</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let ws = null;
+let messageHistory = [];
+let currentProject = null;
+
+// Initialize WebSocket
+function initWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${protocol}//${window.location.host}/ws/chat`);
+
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+    addActivityLog('Connected to orchestration hub');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'project-detected') {
+        currentProject = data;
+        document.getElementById('projectTitle').textContent = data.projectName || 'New Chat';
+        document.getElementById('projectSubtitle').textContent = `Detected: ${data.projectName}`;
+      }
+
+      if (data.type === 'message') {
+        addMessageToChat('assistant', data.response);
+      }
+    } catch (e) {
+      console.error('WebSocket message error:', e);
+    }
+  };
+
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+    addActivityLog('Connection error');
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected');
+    addActivityLog('Disconnected from hub');
+  };
+}
+
+// Send message
+async function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  // Add to chat
+  addMessageToChat('user', message);
+  input.value = '';
+
+  // Send to server
+  try {
+    const response = await fetch('/api/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: message,
+        conversationHistory: messageHistory
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.response) {
+      addMessageToChat('assistant', data.response);
+    }
+
+    if (data.project) {
+      currentProject = data.project;
+      document.getElementById('projectTitle').textContent = data.project.projectName;
+    }
+
+    messageHistory.push({ role: 'user', content: message });
+    messageHistory.push({ role: 'assistant', content: data.response });
+
+  } catch (error) {
+    console.error('Send error:', error);
+    addMessageToChat('error', 'Error sending message');
+  }
+}
+
+// Add message to chat
+function addMessageToChat(role, content) {
+  const chatArea = document.getElementById('chatArea');
+
+  if (chatArea.querySelector('p').textContent.includes('Welcome')) {
+    chatArea.innerHTML = '';
+  }
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'chat-message';
+
+  if (role === 'user') {
+    messageDiv.innerHTML = `
+      <div class="flex justify-end">
+        <div class="max-w-md bg-gradient-to-r from-[#00d9ff] to-[#0066ff] text-[#0a0e27] rounded-lg p-3">
+          <p class="text-sm">${escapeHtml(content)}</p>
+        </div>
+      </div>
+    `;
+  } else if (role === 'assistant') {
+    const codeRegex = /```(.*?)\n([\s\S]*?)```/g;
+    let html = content.replace(codeRegex, (match, lang, code) => {
+      return `<div class="code-block rounded p-3 mt-2 mb-2 overflow-x-auto"><pre><code class="language-${lang || 'plaintext'} text-xs">${escapeHtml(code)}</code></pre></div>`;
+    });
+
+    messageDiv.innerHTML = `
+      <div class="flex justify-start">
+        <div class="max-w-md bg-[#2d3556] rounded-lg p-3">
+          <div class="text-sm text-[#e0e0e0] prose prose-invert">${html}</div>
+        </div>
+      </div>
+    `;
+
+    // Highlight code blocks
+    messageDiv.querySelectorAll('code').forEach(block => {
+      hljs.highlightElement(block);
+    });
+  } else if (role === 'error') {
+    messageDiv.innerHTML = `
+      <div class="flex justify-start">
+        <div class="max-w-md bg-[#663333] rounded-lg p-3">
+          <p class="text-sm text-[#ff6b6b]">${escapeHtml(content)}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  chatArea.appendChild(messageDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+// Utility functions
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function addActivityLog(activity) {
+  const log = document.getElementById('activityLog');
+  const entry = document.createElement('p');
+  entry.textContent = `[${new Date().toLocaleTimeString()}] ${activity}`;
+  log.insertBefore(entry, log.firstChild);
+  if (log.children.length > 10) log.removeChild(log.lastChild);
+}
+
+function toggleTheme() {
+  // Theme toggle logic
+}
+
+function showSettings() {
+  alert('Settings panel - coming soon');
+}
+
+// Start time tracking
+let startTime = Date.now();
+setInterval(() => {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  document.getElementById('timeTracking').textContent = `⏱️ ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}, 1000);
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  initWebSocket();
+  addActivityLog('Chat interface loaded');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+{
+  "proyectos": [
+    {
+      "id": "victor-ia-website",
+      "nombre": "Victor IA Website",
+      "keywords": ["victor ia", "victor-ia", "nuestra web", "nuestro sitio", "website principal"],
+      "carpeta": "C:\\Users\\inbou\\victor-ia-website",
+      "tipo": "website",
+      "cliente": "Victor IA",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["brain-tracker-ux", "pixel-perfecto", "web-4o"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "victor-ia-inclusivo",
+      "nombre": "Victor IA Inclusivo",
+      "keywords": ["inclusivo", "accesibilidad", "multimodal", "victor ia inclusivo"],
+      "carpeta": "C:\\Users\\inbou\\victor-ia-inclusivo",
+      "tipo": "website",
+      "cliente": "Victor IA",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["skill-inclusivo", "pixel-perfecto"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "costa-negra",
+      "nombre": "Costa Negra",
+      "keywords": ["costa negra", "lotes", "propiedades", "qr", "quintana roo"],
+      "carpeta": "C:\\Users\\inbou",
+      "tipo": "website",
+      "cliente": "Costa Negra",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["pixel-perfecto", "web-4o"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "lativa",
+      "nombre": "LATIVA (Video)",
+      "keywords": ["lativa", "video comercial", "spot", "producción video"],
+      "carpeta": "C:\\Users\\inbou",
+      "tipo": "video",
+      "cliente": "LATIVA",
+      "agentes_asignados": ["arquitecto", "video-producer", "revisor"],
+      "skills": ["svg-motion"],
+      "mcp_requerido": ["higgsfield", "elevenlabs"]
+    },
+    {
+      "id": "influence-ia",
+      "nombre": "Influence IA Awards",
+      "keywords": ["influence ia", "awards", "premios web"],
+      "carpeta": "C:\\Users\\inbou\\INFLUENCE-IA-AWARDS-2027",
+      "tipo": "website",
+      "cliente": "Influence IA",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["pixel-perfecto", "web-4o"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "brandbook",
+      "nombre": "Brandbook Victor IA",
+      "keywords": ["brandbook", "manual de identidad", "brand", "identidad visual"],
+      "carpeta": "C:\\Users\\inbou\\victor-ia-brandbook",
+      "tipo": "design",
+      "cliente": "Victor IA",
+      "agentes_asignados": ["designer", "revisor"],
+      "skills": ["pixel-perfecto"],
+      "mcp_requerido": ["figma"]
+    },
+    {
+      "id": "dashboard-bi",
+      "nombre": "Dashboard BI",
+      "keywords": ["dashboard", "bi", "kpis", "analytics", "métricas"],
+      "carpeta": "C:\\Users\\inbou\\victor-ia-dashboard",
+      "tipo": "dashboard",
+      "cliente": "Victor IA",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["web-4o"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "seabird-hotel",
+      "nombre": "Seabird Hotel",
+      "keywords": ["seabird", "hyatt", "oceanside", "california", "resort", "spa"],
+      "carpeta": "C:\\Users\\inbou\\seabird-resort",
+      "tipo": "website",
+      "cliente": "Seabird Hotel",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["pixel-perfecto"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "roes-co",
+      "nombre": "ROES & CO",
+      "keywords": ["roes", "roes & co", "inversionesconplusvalia", "plusvalia"],
+      "carpeta": "C:\\Users\\inbou\\roes-co-website",
+      "tipo": "website",
+      "cliente": "ROES & CO",
+      "agentes_asignados": ["arquitecto", "frontend-dev", "revisor"],
+      "skills": ["web-4o"],
+      "mcp_requerido": []
+    },
+    {
+      "id": "propuesta-aldo",
+      "nombre": "Propuesta Aldo Rendón",
+      "keywords": ["aldo", "remi", "remi creative"],
+      "carpeta": "C:\\Users\\inbou",
+      "tipo": "propuesta",
+      "cliente": "Aldo Rendón",
+      "agentes_asignados": ["arquitecto"],
+      "skills": [],
+      "mcp_requerido": []
+    }
+  ],
+  "tracking": {
+    "archivo_activo": "C:\\Users\\inbou\\.claude\\memoria-sesiones\\proyecto-activo.json",
+    "archivo_punto_parada": "C:\\Users\\inbou\\.claude\\memoria-sesiones\\punto-de-parada.md",
+    "carpeta_diarios": "C:\\Users\\inbou\\.claude\\projects\\c--Users-inbou--agents\\memory"
+  }
+}

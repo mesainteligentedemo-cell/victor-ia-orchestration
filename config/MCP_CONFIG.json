@@ -1,0 +1,45 @@
+{
+  "mcp_servers": [
+    {
+      "id": "figma",
+      "nombre": "Figma MCP",
+      "descripcion": "Read/write designs in Figma, create components, design systems",
+      "host": "http://localhost:3001",
+      "token": "${FIGMA_API_TOKEN}",
+      "tools": ["get_design_context", "get_screenshot", "use_figma", "create_new_file", "generate_diagram"],
+      "requerido_por": ["designer", "brain-tracker-ux"]
+    },
+    {
+      "id": "higgsfield",
+      "nombre": "Higgsfield MCP",
+      "descripcion": "Image and video generation - generate_image, generate_video",
+      "host": "http://localhost:3002",
+      "token": "${HIGGSFIELD_API_TOKEN}",
+      "tools": ["generate_image", "generate_video", "upscale_image", "upscale_video"],
+      "requerido_por": ["video-producer", "designer"]
+    },
+    {
+      "id": "google_drive",
+      "nombre": "Google Drive MCP",
+      "descripcion": "Create, read, update files in Google Drive",
+      "host": "http://localhost:3003",
+      "token": "${GOOGLE_API_TOKEN}",
+      "tools": ["create_file", "read_file_content", "download_file_content", "search_files"],
+      "requerido_por": ["arquitecto"]
+    },
+    {
+      "id": "elevenlabs",
+      "nombre": "ElevenLabs MCP",
+      "descripcion": "Generate voice-overs with timestamps and sync",
+      "host": "http://localhost:3004",
+      "token": "${ELEVENLABS_API_TOKEN}",
+      "tools": ["generate_voice", "get_voices", "synthesis_with_timestamps"],
+      "requerido_por": ["video-producer"]
+    }
+  ],
+  "defaults": {
+    "timeout": 30000,
+    "retry_attempts": 3,
+    "retry_delay": 1000
+  }
+}
