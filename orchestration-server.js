@@ -1,12 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { v4 as uuid } from 'uuid';
 import dotenv from 'dotenv';
 import { Anthropic } from '@anthropic-ai/sdk';
-import { WebSocketServer } from 'ws';
 import http from 'http';
+import { WebSocketServer } from 'ws';
 
 dotenv.config();
 
@@ -18,268 +15,154 @@ const wss = new WebSocketServer({ server });
 // ============ MIDDLEWARE ============
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-// ============ LOAD CONFIGS ============
-function loadConfigs() {
-  const configPath = (file) => path.join('.', 'config', file);
-
-  return {
-    proyectos: JSON.parse(fs.readFileSync(configPath('PROYECTOS_CONFIG.json'), 'utf8')),
-    agentes: JSON.parse(fs.readFileSync(configPath('AGENTES_CONFIG.json'), 'utf8')),
-    skills: JSON.parse(fs.readFileSync(configPath('SKILLS_CONFIG.json'), 'utf8')),
-    mcp: JSON.parse(fs.readFileSync(configPath('MCP_CONFIG.json'), 'utf8')),
-    routing: JSON.parse(fs.readFileSync(configPath('ROUTING_RULES.json'), 'utf8'))
-  };
-}
-
-const configs = loadConfigs();
+// ============ ANTHROPIC CLIENT ============
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY
 });
 
-// ============ PROJECT DETECTION ============
-function detectProjectFromPrompt(prompt) {
-  const lowerPrompt = prompt.toLowerCase();
+// ============ HEALTH CHECK ============
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-  for (const proyecto of configs.proyectos.proyectos) {
-    for (const keyword of proyecto.keywords) {
-      if (lowerPrompt.includes(keyword.toLowerCase())) {
-        return {
-          projectId: proyecto.id,
-          projectName: proyecto.nombre,
-          confidence: 0.9,
-          project: proyecto
-        };
-      }
-    }
-  }
-
-  return {
-    projectId: null,
-    projectName: 'General',
-    confidence: 0,
-    project: null
-  };
-}
-
-// ============ AGENT ROUTING ============
-function routePrompt(prompt, project) {
-  const promptLength = prompt.length;
-  let selectedWorkflow = 'tarea-simple';
-
-  for (const rule of configs.routing.routing_rules) {
-    if (prompt.toLowerCase().includes('video') || prompt.toLowerCase().includes('kling')) {
-      selectedWorkflow = 'produccion-video';
-      break;
-    }
-    if (prompt.toLowerCase().includes('diseña') || prompt.toLowerCase().includes('ui')) {
-      selectedWorkflow = 'desarrollo-website';
-      break;
-    }
-    if (promptLength > 100) {
-      selectedWorkflow = 'desarrollo-website';
-      break;
-    }
-  }
-
-  const workflow = configs.agentes.multi_agent_workflows.find(w => w.id === selectedWorkflow);
-
-  return {
-    workflow: selectedWorkflow,
-    agentFlow: workflow?.agentes_requeridos || ['frontend-dev'],
-    priority: promptLength > 100 ? '2_alto' : '4_bajo'
-  };
-}
-
-// ============ TIME TRACKING ============
-function startProjectSession(projectId, projectName) {
-  const sessionData = {
-    sessionId: uuid(),
-    projectId,
-    projectName,
-    startTime: new Date().toISOString(),
-    activities: []
-  };
-
-  return sessionData;
-}
-
-function logActivity(session, activity, duration) {
-  session.activities.push({
-    activity,
-    duration,
-    timestamp: new Date().toISOString()
+// ============ AGENTS LIST ============
+app.get('/api/agents', (req, res) => {
+  res.json({
+    agents: [
+      { id: 'leader', name: 'Líder', role: 'Planificación' },
+      { id: 'implementer', name: 'Implementador', role: 'Ejecución' },
+      { id: 'reviewer', name: 'Revisor', role: 'Validación' }
+    ]
   });
-}
+});
 
-// ============ MEMORY SYNC ============
-function loadProjectMemory(projectId) {
-  try {
-    const memoryPath = `${process.env.MEMORIA_PATH}`;
-    if (fs.existsSync(memoryPath)) {
-      return fs.readdirSync(memoryPath).filter(f => f.includes(projectId));
-    }
-  } catch (e) {
-    console.error('Memory load error:', e);
-  }
-  return [];
-}
-
-function updateStoppingPoint(sessionData) {
-  try {
-    const puntoPaladaPath = process.env.PUNTO_PARADA_PATH;
-    const content = `# PUNTO DE PARADA — ${new Date().toISOString()}\n\n## PROYECTO\n- ${sessionData.projectName}\n\n## ACTIVIDADES\n${sessionData.activities.map(a => `- ${a.activity}: ${a.duration}ms`).join('\n')}`;
-
-    fs.writeFileSync(puntoPaladaPath, content, 'utf8');
-  } catch (e) {
-    console.error('Punto de parada update error:', e);
-  }
-}
-
-// ============ REST ENDPOINTS ============
-
+// ============ MAIN PROMPT ENDPOINT ============
 app.post('/api/prompt', async (req, res) => {
   try {
     const { message, conversationHistory = [] } = req.body;
 
-    // Detect project
-    const projectDetection = detectProjectFromPrompt(message);
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'Message is required' });
+    }
 
-    // Route to agent
-    const routing = routePrompt(message, projectDetection.project);
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
 
-    // Start session
-    const session = startProjectSession(
-      projectDetection.projectId,
-      projectDetection.projectName
-    );
+    // Build conversation messages
+    const messages = [
+      ...conversationHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      {
+        role: 'user',
+        content: message
+      }
+    ];
 
-    // Call Anthropic API
+    // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-8',
-      max_tokens: 2048,
-      system: `You are a helpful AI assistant integrated with Victor IA's orchestration system.
-      Current Project: ${projectDetection.projectName}
-      Available Agents: ${routing.agentFlow.join(', ')}
+      model: 'claude-opus-4-1-20250805',
+      max_tokens: 1024,
+      system: `Eres un asistente inteligente y útil. Responde de forma concisa, clara y profesional.
 
-      Respond helpfully and professionally.`,
-      messages: [
-        ...conversationHistory,
-        { role: 'user', content: message }
-      ]
+Cuando el usuario mencione proyectos de Victor IA, websites, diseño, desarrollo, etc.,
+brinda recomendaciones específicas y prácticas. Sé directo y evita redundancias.`,
+      messages: messages
     });
 
-    // Log activity
-    const responseText = response.content[0].type === 'text' ? response.content[0].text : '';
-    logActivity(session, `Respuesta a: ${message.substring(0, 50)}...`, 1000);
+    const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : '';
 
     res.json({
-      response: responseText,
-      project: projectDetection,
-      routing: routing,
-      sessionId: session.sessionId
+      response: assistantMessage,
+      model: response.model,
+      usage: {
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens
+      }
     });
-
   } catch (error) {
-    console.error('API error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Prompt endpoint error:', error);
+    res.status(500).json({
+      error: error.message,
+      type: error.constructor.name
+    });
   }
 });
 
-app.get('/api/project-status', (req, res) => {
-  try {
-    const activeProjectPath = process.env.PROYECTO_ACTIVO_PATH;
-    if (fs.existsSync(activeProjectPath)) {
-      const data = JSON.parse(fs.readFileSync(activeProjectPath, 'utf8'));
-      res.json(data);
-    } else {
-      res.json({ status: 'no-project' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/api/memory/:projectId', (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const memory = loadProjectMemory(projectId);
-    res.json({ projectId, memory });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/close-session', (req, res) => {
-  try {
-    const { sessionData } = req.body;
-    updateStoppingPoint(sessionData);
-    res.json({ status: 'session-closed' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/api/agents', (req, res) => {
-  res.json(configs.agentes.agentes);
-});
-
-app.get('/api/skills', (req, res) => {
-  res.json(configs.skills.skills);
-});
-
-// ============ WEBSOCKET ============
-
+// ============ WEBSOCKET SUPPORT ============
 wss.on('connection', (ws) => {
-  console.log('Client connected');
+  console.log('WebSocket client connected');
 
   ws.on('message', async (data) => {
     try {
-      const message = JSON.parse(data);
+      const { message, conversationHistory = [] } = JSON.parse(data);
 
-      // Detect project
-      const project = detectProjectFromPrompt(message.text);
-      ws.send(JSON.stringify({ type: 'project-detected', ...project }));
+      const messages = [
+        ...conversationHistory.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        {
+          role: 'user',
+          content: message
+        }
+      ];
 
-      // Route
-      const routing = routePrompt(message.text, project.project);
-      ws.send(JSON.stringify({ type: 'routing', ...routing }));
+      const response = await anthropic.messages.create({
+        model: 'claude-opus-4-1-20250805',
+        max_tokens: 1024,
+        messages: messages
+      });
 
+      const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : '';
+
+      ws.send(JSON.stringify({
+        type: 'response',
+        response: assistantMessage,
+        model: response.model
+      }));
     } catch (error) {
-      ws.send(JSON.stringify({ type: 'error', message: error.message }));
+      ws.send(JSON.stringify({
+        type: 'error',
+        error: error.message
+      }));
     }
   });
 
   ws.on('close', () => {
-    console.log('Client disconnected');
+    console.log('WebSocket client disconnected');
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
   });
 });
 
 // ============ ERROR HANDLING ============
-
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message
+  });
 });
 
-// ============ SERVER STARTUP ============
+// ============ START SERVER ============
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 Health: http://localhost:${PORT}/health`);
+  console.log(`💬 API endpoint: http://localhost:${PORT}/api/prompt`);
+  console.log(`🔗 Backend ready: ${new Date().toISOString()}`);
+});
 
-server.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════════════════╗
-║     🎛️  ORCHESTRATION HUB - PRODUCTION READY          ║
-╚═══════════════════════════════════════════════════════╝
-
-✅ Server running on http://localhost:${PORT}
-✅ Configs loaded successfully
-✅ WebSocket ready on ws://localhost:${PORT}
-✅ Memory systems initialized
-✅ Agent routing active
-
-📖 Documentation: http://localhost:${PORT}/docs
-💬 Chat: http://localhost:${PORT}/chat
-
-Ready to orchestrate! 🚀
-  `);
+// ============ GRACEFUL SHUTDOWN ============
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
