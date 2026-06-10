@@ -45,54 +45,47 @@ app.get('/api/agents', (req, res) => {
 // ============ MAIN PROMPT ENDPOINT ============
 app.post('/api/prompt', async (req, res) => {
   try {
-    const { message, conversationHistory = [] } = req.body;
+    console.log('[API] POST /api/prompt - received request');
+    const { message } = req.body;
 
     if (!message || message.trim() === '') {
+      console.error('[API] Message is empty');
       return res.status(400).json({ error: 'Message is required' });
     }
 
     if (!process.env.OPENROUTER_API_KEY) {
+      console.error('[API] OPENROUTER_API_KEY not configured');
       return res.status(500).json({ error: 'OpenRouter API key not configured' });
     }
 
-    // Build conversation messages
-    const messages = [
-      ...conversationHistory.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      })),
-      {
-        role: 'user',
-        content: message
-      }
-    ];
+    console.log(`[API] Calling Claude with message: "${message.substring(0, 50)}..."`);
 
-    // Call Claude API
+    // Call Claude via OpenRouter
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-8',
-      max_tokens: 4096,
-      system: `Eres un asistente inteligente y útil. Responde de forma concisa, clara y profesional.
-
-Cuando el usuario mencione proyectos de Victor IA, websites, diseño, desarrollo, etc.,
-brinda recomendaciones específicas y prácticas. Sé directo y evita redundancias.`,
-      messages: messages
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'user',
+          content: message
+        }
+      ]
     });
 
-    const assistantMessage = response.content.find((b) => b.type === 'text')?.text || '';
+    console.log('[API] Claude response received');
+    const assistantMessage = response.content
+      .filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('\n') || 'No response';
 
     res.json({
-      response: assistantMessage,
-      model: response.model,
-      usage: {
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens
-      }
+      response: assistantMessage
     });
   } catch (error) {
-    console.error('Prompt endpoint error:', error);
+    console.error('[API] Error:', error.message || error);
+    console.error('[API] Error stack:', error.stack);
     res.status(500).json({
-      error: error.message,
-      type: error.constructor.name
+      error: error.message || 'Internal server error'
     });
   }
 });
