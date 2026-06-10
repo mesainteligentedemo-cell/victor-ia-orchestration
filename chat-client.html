@@ -231,8 +231,12 @@ function initWebSocket() {
         document.getElementById('projectSubtitle').textContent = `Detected: ${data.projectName}`;
       }
 
-      if (data.type === 'message') {
+      if (data.type === 'message' || data.type === 'response') {
         addMessageToChat('assistant', data.response);
+      }
+
+      if (data.type === 'error') {
+        addMessageToChat('error', data.error || 'Backend error');
       }
     } catch (e) {
       console.error('WebSocket message error:', e);
@@ -274,6 +278,11 @@ async function sendMessage() {
 
     const data = await response.json();
 
+    if (!response.ok || data.error) {
+      addMessageToChat('error', data.error || `Backend error (HTTP ${response.status})`);
+      return;
+    }
+
     if (data.response) {
       addMessageToChat('assistant', data.response);
     }
@@ -288,7 +297,7 @@ async function sendMessage() {
 
   } catch (error) {
     console.error('Send error:', error);
-    addMessageToChat('error', 'Error sending message');
+    addMessageToChat('error', 'Backend unreachable — ensure backend is running.');
   }
 }
 

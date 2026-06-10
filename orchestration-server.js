@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server, path: '/ws/chat' });
 
 // ============ MIDDLEWARE ============
 app.use(cors());
@@ -64,8 +64,8 @@ app.post('/api/prompt', async (req, res) => {
 
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-1-20250805',
-      max_tokens: 1024,
+      model: 'claude-opus-4-8',
+      max_tokens: 4096,
       system: `Eres un asistente inteligente y útil. Responde de forma concisa, clara y profesional.
 
 Cuando el usuario mencione proyectos de Victor IA, websites, diseño, desarrollo, etc.,
@@ -73,7 +73,7 @@ brinda recomendaciones específicas y prácticas. Sé directo y evita redundanci
       messages: messages
     });
 
-    const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : '';
+    const assistantMessage = response.content.find((b) => b.type === 'text')?.text || '';
 
     res.json({
       response: assistantMessage,
@@ -112,12 +112,12 @@ wss.on('connection', (ws) => {
       ];
 
       const response = await anthropic.messages.create({
-        model: 'claude-opus-4-1-20250805',
-        max_tokens: 1024,
+        model: 'claude-opus-4-8',
+        max_tokens: 4096,
         messages: messages
       });
 
-      const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : '';
+      const assistantMessage = response.content.find((b) => b.type === 'text')?.text || '';
 
       ws.send(JSON.stringify({
         type: 'response',
