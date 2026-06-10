@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws/chat' });
 
+// Force rebuild v2
+console.log('🚀 Orchestration server starting...');
+
 // ============ MIDDLEWARE ============
 app.use(cors());
 app.use(express.json());
