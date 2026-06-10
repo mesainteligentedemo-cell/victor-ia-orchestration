@@ -16,9 +16,14 @@ const wss = new WebSocketServer({ server, path: '/ws/chat' });
 app.use(cors());
 app.use(express.json());
 
-// ============ ANTHROPIC CLIENT ============
+// ============ OPENROUTER CLIENT ============
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.io/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://victor-ia-saas.vercel.app',
+    'X-Title': 'Victor IA Chat'
+  }
 });
 
 // ============ HEALTH CHECK ============
@@ -46,8 +51,8 @@ app.post('/api/prompt', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return res.status(500).json({ error: 'API key not configured' });
+    if (!process.env.OPENROUTER_API_KEY) {
+      return res.status(500).json({ error: 'OpenRouter API key not configured' });
     }
 
     // Build conversation messages
